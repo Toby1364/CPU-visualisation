@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 use macroquad::prelude::*;
 use macroquad::audio::*;
@@ -123,13 +123,15 @@ async fn main() {
         clear_background(Color::from_hex(0x181818));
         
         delta = 1./get_fps() as f32;
+        
+        let thick = 6. *scale;
 
         { // Ticking
             if pointer != target_pointer {
                 if turbo {pointer = target_pointer}
                 else {
-                    offset += delta*1.;
-                    if auto { offset += delta*1. }
+                    offset += delta*1.5;
+                    if auto { offset += delta*0.5 }
                     for i in 0..anim.len() {
                         anim[i] = 0.;
                     }
@@ -152,25 +154,29 @@ async fn main() {
         { // Interaction
             if is_mouse_button_pressed(MouseButton::Left) {
                 editing_value.clear();
-                if mouse_position().0 > 210. *scale + frame.x && mouse_position().0 < (210. + 150.) *scale + frame.x && mouse_position().1 > 250. *scale + frame.y && mouse_position().1 < (250. + 70.) *scale + frame.y{
+                if mouse_position().0 > 210. *scale + frame.x && mouse_position().0 < (210. + 150.) *scale + frame.x && mouse_position().1 > 250. *scale + frame.y && mouse_position().1 < (250. + 70.) *scale + frame.y {
                     editing_index = Some(0x100);
                 }
-                else if mouse_position().0 > 210. *scale + frame.x && mouse_position().0 < (210. + 150.) *scale + frame.x && mouse_position().1 > 320. *scale + frame.y && mouse_position().1 < (320. + 60.) *scale + frame.y{
+                else if mouse_position().0 > 210. *scale + frame.x && mouse_position().0 < (210. + 150.) *scale + frame.x && mouse_position().1 > 320. *scale + frame.y && mouse_position().1 < (320. + 60.) *scale + frame.y {
                     editing_index = Some(0x101);
                 }
-                else if mouse_position().0 > 210. *scale + frame.x && mouse_position().0 < (210. + 170.) *scale + frame.x && mouse_position().1 > 390. *scale + frame.y && mouse_position().1 < (390. + 40.) *scale + frame.y{
+                else if mouse_position().0 > 210. *scale + frame.x && mouse_position().0 < (210. + 170.) *scale + frame.x && mouse_position().1 > 390. *scale + frame.y && mouse_position().1 < (390. + 40.) *scale + frame.y {
                     editing_index = Some(0x102);
                 }
-                else if mouse_position().0 > 380. *scale + frame.x && mouse_position().0 < (380. + 90.) *scale + frame.x && mouse_position().1 > 390. *scale + frame.y && mouse_position().1 < (390. + 40.) *scale + frame.y{
+                else if mouse_position().0 > 380. *scale + frame.x && mouse_position().0 < (380. + 90.) *scale + frame.x && mouse_position().1 > 365. *scale + frame.y && mouse_position().1 < (365. + 40.) *scale + frame.y {
                     cf =! cf;
                     play_sound_once(switch_sound);
                 }
-                else if mouse_position().0 > 458. *scale + frame.x && mouse_position().0 < (458. + 20.) *scale + frame.x && mouse_position().1 > 260. *scale + frame.y && mouse_position().1 < (260. + 36.) *scale + frame.y{
+                else if mouse_position().0 > 458. *scale + frame.x && mouse_position().0 < (458. + 20.) *scale + frame.x && mouse_position().1 > 260. *scale + frame.y && mouse_position().1 < (260. + 36.) *scale + frame.y {
                     auto =! auto;
                     play_sound_once(switch_sound);
                 }
-                else if mouse_position().0 > 428. *scale + frame.x && mouse_position().0 < (428. + 20.) *scale + frame.x && mouse_position().1 > 260. *scale + frame.y && mouse_position().1 < (260. + 36.) *scale + frame.y{
+                else if mouse_position().0 > 428. *scale + frame.x && mouse_position().0 < (428. + 20.) *scale + frame.x && mouse_position().1 > 260. *scale + frame.y && mouse_position().1 < (260. + 36.) *scale + frame.y {
                     turbo =! turbo;
+                    play_sound_once(switch_sound);
+                }
+                else if mouse_position().0 > 380. *scale + frame.x && mouse_position().0 < (380. + 90.) *scale + frame.x && mouse_position().1 > 390. *scale + frame.y && mouse_position().1 < (390. + 40.) *scale + frame.y {
+                    halt =! halt;
                     play_sound_once(switch_sound);
                 }
                 else {
@@ -179,8 +185,6 @@ async fn main() {
             }
         }
         
-        let thick = 6. *scale;
-
         { // Main draw
             for p in 0..0x1_0000 {
                 let x = ((p as f32 - pointer as f32 + 4.)  * 47. - (smooth_step(offset) * 47. * (target_pointer as f32 - pointer as f32))) * scale + frame.x;
@@ -411,7 +415,6 @@ async fn main() {
             }
         }
         
-
         { // CPU draw
             draw_rectangle_lines(
                 188. *scale + frame.x, 
@@ -592,7 +595,7 @@ async fn main() {
             draw_text_ex(
                 "Carry flag:", 
                 380. *scale + frame.x, 
-                414. *scale + frame.y,  
+                389. *scale + frame.y,  
                 TextParams {
                     font,
                     font_size: (10. *scale) as u16,
@@ -602,6 +605,28 @@ async fn main() {
             );
             let mut color = Color::from_hex(0x550000);
             if cf {color = Color::from_hex(0xFF0000)}
+            draw_circle(
+                460. *scale + frame.x, 
+                386. *scale + frame.y,
+                8. *scale, 
+                color
+            );
+        }
+
+        { // Halt flag
+            draw_text_ex(
+                "Halt flag:", 
+                380. *scale + frame.x, 
+                414. *scale + frame.y,  
+                TextParams {
+                    font,
+                    font_size: (10. *scale) as u16,
+                    color: WHITE,
+                    ..Default::default()
+                }
+            );
+            let mut color = Color::from_hex(0x550000);
+            if halt {color = Color::from_hex(0xFF0000)}
             draw_circle(
                 460. *scale + frame.x, 
                 411. *scale + frame.y,
@@ -733,7 +758,7 @@ async fn main() {
         }
 
         { // Execution
-            if pointer == target_pointer && (auto || next) {
+            if pointer == target_pointer && (auto || next) && !halt {
                 next = false;
                 played = false;
 
@@ -952,6 +977,7 @@ async fn main() {
                 color,
             );
         }
+        
         { // Turbo Switch
             draw_rectangle(
                 428. *scale + frame.x, 
@@ -1026,6 +1052,40 @@ async fn main() {
                 }
             }
         }
+   
+        { // Graphics window
+            draw_rectangle_lines(
+                10. *scale + frame.x, 
+                250. *scale + frame.y, 
+                138. *scale, 
+                180. *scale, 
+                thick, 
+                WHITE
+            );
+
+            let mut bytes: Vec<u8> = Vec::new();
+
+            for n in ram[0xFF00..=0xFFFF].into_iter() {
+                let n = n.0 as u32;
+                bytes.push(((n >> 5) * 32) as u8);
+                bytes.push((((n & 28) >> 2) * 32) as u8);
+                bytes.push(((n & 3) * 64) as u8);
+                bytes.push(0xFF);
+            }
+
+            let screen = Texture2D::from_rgba8(16, 16, &bytes);
+            screen.set_filter(FilterMode::Nearest);
+            draw_texture_ex(
+                screen, 
+                10. *scale + frame.x + thick/2., 
+                250. *scale + frame.y + thick/2., 
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(Vec2 { x: 138. *scale - thick, y: 180. *scale - thick }),
+                    ..Default::default()
+                }
+            );
+        }
     }
 }
 
@@ -1082,10 +1142,12 @@ fn assemble(mut asm: String) -> Vec<u8> {
     }
     asm = asm.replace("x", "00");
     asm = asm.replace("y", "01");
+    asm = asm.replace(";", "\n;");
 
 
     for line in asm.lines() {
         if line.is_empty() {continue}
+        if line.starts_with(";") {continue}
 
         let line = line.trim();
         let mut line = line.split(' ');
